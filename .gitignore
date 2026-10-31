@@ -6,8 +6,24 @@
 /filt_parser.h
 /filt_parser.output
 /filt_scanner.c
+/flex_bison/filt_parser.c
+/flex_bison/filt_parser.h
+/flex_bison/filt_scanner.c
 /tcptrace
 /versnum
 
 /config.log
 /config.status
+
+# Tooling / Agent configurations
+/.agents/
+
+# CMake
+/build/
+/build-*/
+
+# Test outputs
+/input/OUTPUT_*
+/input/OUTPUTbench_current
+/input/DIFFS
+*.xpl

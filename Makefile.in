@@ -39,8 +39,8 @@ DEFINES += -DBUNZIP2="\"bunzip2\""
 # 
 ################################################################## 
 PCAP_LDLIBS = @V_PCAP_LDLIBS@
-PCAP_INCS    = -I/usr/local/include -I. -I../pcap -I/usr/include/pcap
-PCAP_LDFLAGS = -L/usr/local/lib -Llib -Lpcap -L../pcap -L./cygwin-libs
+PCAP_INCS    = -I/usr/local/include -I. -I/usr/include/pcap
+PCAP_LDFLAGS = -L/usr/local/lib
 
 
 
@@ -180,6 +180,10 @@ MODSUPPORT=dyncounter.c
 OFILES= ${CFILES:.c=.o} ${MODULES:.c=.o} ${MODSUPPORT:.c=.o}
 
 all: tcptrace versnum
+
+test: check
+check: tcptrace
+	./input/bin/run_regression.sh ./tcptrace
 
 tcptrace: ${OFILES}
 	${CC} ${LDFLAGS} ${CFLAGS} ${OFILES} -o tcptrace ${LDLIBS}

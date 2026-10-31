@@ -74,11 +74,6 @@ dnl case "$target_os" in
 dnl  *inux*)	V_INCLS="$V_INCLS -Ilinux-include";
 dnl esac
 
-dnl Grab includes from ./cygwin-includes under Windows versions
-case "$target" in
-  *cygwin*)	V_INCLS="$V_INCLS -I./cygwin-includes";
-esac
-
 dnl define -D__USE_BSD -D__FAVOR_BSD -D__USE_MISC -D__WIN32 for windows
 case "$target" in
   *cygwin*)	V_DEFINES="$V_DEFINES -D__USE_BSD -D__FAVOR_BSD -D__USE_MISC -D__WIN32";

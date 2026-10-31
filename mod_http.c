@@ -262,7 +262,7 @@ DataOffset(
 	off = tcb->syn-seq;
 
     if (debug>1)
-	fprintf(stderr,"DataOffset: seq is %lu, syn is %lu, offset is %ld\n",
+	fprintf(stderr,"DataOffset: seq is %u, syn is %u, offset is %ld\n",
 		seq, tcb->syn, off);
 
     return(off);

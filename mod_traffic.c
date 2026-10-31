@@ -291,7 +291,7 @@ IncludePorts(
 
 
 
-static int
+static void
 traffic_init_files(void)
 {
     static int created = 0;

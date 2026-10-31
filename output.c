@@ -89,7 +89,7 @@ char *sp;  /* Separator used for long output with <SP>-separated-values */
 /* macro... */
 #ifdef HAVE_LONG_LONG
 #define StatLineI(label,units,ul1,ul2)  \
-(sizeof((ul1)) == SIZEOF_UNSIGNED_LONG_LONG_INT)?\
+(sizeof((ul1)) == sizeof(u_llong))?\
   StatLineI_LL((label),(units),(ul1),(ul2)):\
   StatLineI_L ((label),(units),(ul1),(ul2))
 #else /* HAVE_LONG_LONG */
@@ -1082,14 +1082,10 @@ PrintSVHeader(
    
    /* Set the separator */
    if(csv || tsv) {
-      /* Initialize the separator buffer */      
-      sp = (char *)malloc(sizeof(char *) * 2);
-      memset(sp, 0, sizeof(sp));
-      /* Set it */
       if(csv)
-	snprintf(sp, sizeof(sp), ",");	
+	sp = strdup(",");	
       else if(tsv)
-	snprintf(sp, sizeof(sp), "\t");
+	sp = strdup("\t");
    }
    else if (sv != NULL)
      {
@@ -1100,10 +1096,7 @@ PrintSVHeader(
 	 * else and things get messy.
 	 */
 	if(strncmp(sv, "\\t", 2) == 0) {
-	   /* Initialize the separator buffer and set it */      
-	   sp = (char *)malloc(sizeof(char *) * 2);
-	   memset(sp, 0, sizeof(sp));
-	   snprintf(sp, sizeof(sp), "\t");
+	   sp = strdup("\t");
 	}
 	else /* Just use the string the user has provided */
 	  sp = strdup(sv);

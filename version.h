@@ -58,9 +58,9 @@ static char const GCC_UNUSED rcsid_version[] =
 
 /* source code version information */
 #define VERSION_MAJOR	"6"
-#define VERSION_MINOR	"6"
-#define VERSION_BUGFIX	"8"
-#define VERSION_DATE	"Thu Jan  5, 2006"
+#define VERSION_MINOR	"7"
+#define VERSION_BUGFIX	"0"
+#define VERSION_DATE	"Sat Oct 31, 2026"
 
 #define VERSION_NUM   VERSION_MAJOR "." VERSION_MINOR "." VERSION_BUGFIX
 

@@ -903,8 +903,8 @@ FindTTP(
 		    printf("b2a.reset_count: %d\n", ptp->b2a.reset_count);
 		    printf("dir: %d (%s)\n", dir, dir==A2B?"A2B":"B2A");
 		    printf("seq:    %lu \n", (u_long)ntohl(ptcp->th_seq));
-		    printf("winend: %lu \n", otherdir->windowend);
-		    printf("syn:    %lu \n", otherdir->syn);
+		    printf("winend: %u \n", otherdir->windowend);
+		    printf("syn:    %u \n", otherdir->syn);
 		    printf("SEQ_GREATERTHAN winend: %d\n", 
 			   SEQ_GREATERTHAN(ntohl(ptcp->th_seq),otherdir->windowend));
 		    printf("SEQ_LESSTHAN init syn: %d\n", 
@@ -1391,8 +1391,8 @@ dotrace(
     tcp_pair	*ptp_save;
     int		tcp_length;
     int		tcp_data_length;
-    u_long	start;
-    u_long	end;
+    seqnum	start;
+    seqnum	end;
     tcb		*thisdir;
     tcb		*otherdir;
     tcp_pair	tp_in;
@@ -1570,7 +1570,7 @@ dotrace(
 	    /* it changed, that shouldn't happen! */
 	    if (warn_printbad_syn_fin_seq)
 		fprintf(stderr, "\
-%s->%s: rexmitted SYN had diff. seqnum! (was %lu, now %lu, etime: %d sec)\n",
+%s->%s: rexmitted SYN had diff. seqnum! (was %u, now %u, etime: %d sec)\n",
 			thisdir->host_letter,thisdir->ptwin->host_letter,
 			thisdir->syn, start,
 			(int)(elapsed(ptp_save->first_time,current_time)/1000000));
@@ -1583,13 +1583,13 @@ dotrace(
     if (FIN_SET(ptcp)) {
 	/* bug fix, if there's data here too, we need to bump up the FIN */
 	/* (psc data file shows example) */
-	u_long fin = start + tcp_data_length;
+	seqnum fin = start + tcp_data_length;
 	/* error checking - better not change! */
 	if ((thisdir->fin_count > 1) && (thisdir->fin != fin)) {
 	    /* it changed, that shouldn't happen! */
 	    if (warn_printbad_syn_fin_seq)
 		fprintf(stderr, "\
-%s->%s: rexmitted FIN had diff. seqnum! (was %lu, now %lu, etime: %d sec)\n",
+%s->%s: rexmitted FIN had diff. seqnum! (was %u, now %u, etime: %d sec)\n",
 			thisdir->host_letter,thisdir->ptwin->host_letter,
 			thisdir->fin, fin,
 			(int)(elapsed(ptp_save->first_time,current_time)/1000000));
@@ -2106,14 +2106,14 @@ dotrace(
       /* Write the sequence numbers */
       if(dir == A2B) {
 	 /* Use relative sequence numbers after the first segment in either direction */
-	 snprintf(buf2, sizeof(buf2), "%lu:%lu(%lu) ", (start - a2b_first_seqnum),
+	 snprintf(buf2, sizeof(buf2), "%u:%u(%u) ", (start - a2b_first_seqnum),
 		  (end - a2b_first_seqnum), (end-start));
 	 strncat(buf1, buf2, strlen(buf2));
 	 if(a2b_first_seqnum == 0 && !SYN_SET(ptcp)) // Don't use relative sequence numbers until handshake is complete.
 	   a2b_first_seqnum = thisdir->min_seq;
       }else if(dir == B2A) {
 	 /* Use relative sequence numbers after the first segment in either direction */
-	 snprintf(buf2, sizeof(buf2), "%lu:%lu(%lu) ", (start - b2a_first_seqnum),
+	 snprintf(buf2, sizeof(buf2), "%u:%u(%u) ", (start - b2a_first_seqnum),
 		  (end - b2a_first_seqnum), (end-start));
 	 strncat(buf1, buf2, strlen(buf2));
 	 if(b2a_first_seqnum == 0 && !SYN_SET(ptcp))
@@ -2124,9 +2124,9 @@ dotrace(
       if(ACK_SET(ptcp)) {
 	 memset(&buf2, 0, sizeof(buf2));
 	 if(dir == A2B)
-	   snprintf(buf2, sizeof(buf2), "ack %lu ", (th_ack - b2a_first_seqnum));
+	   snprintf(buf2, sizeof(buf2), "ack %u ", (th_ack - b2a_first_seqnum));
 	 else if(dir == B2A)
-	   snprintf(buf2, sizeof(buf2), "ack %lu ", (th_ack - a2b_first_seqnum));
+	   snprintf(buf2, sizeof(buf2), "ack %u ", (th_ack - a2b_first_seqnum));
 	 strncat(buf1, buf2, strlen(buf2));
       }
       
@@ -2876,7 +2876,7 @@ ParseOptions(
     void *plast)
 {
     static struct tcp_options tcpo;
-    struct sack_block *psack;
+    u_char *psack;
     u_char *pdata;
     u_char *popt;
     u_char *plen;
@@ -2997,23 +2997,20 @@ ParseOptions: packet %lu %s option truncated, skipping other options\n", \
 	    /* see which bytes are acked */
 	    CHECK_O_LEN("TCPOPT_SACK");
 	    tcpo.sack_count = 0;
-	    psack = (sack_block *)(popt+2);  /* past the kind and length */
+	    psack = popt + 2;  /* past the kind and length */
 	    popt += *plen;
-	    while ((char *)psack < (char *)popt) {
+	    while (psack < popt) {
 		struct sack_block *psack_local =
 		    &tcpo.sacks[(unsigned)tcpo.sack_count];
-		/* warning, possible alignment problem here, so we'll
-		   use memcpy() and hope for the best */
-		/* better use -fno-builtin to avoid gcc alignment error
-		   in GCC 2.7.2 */
+		/* Use memcpy to safely copy potentially unaligned SACK block */
 		memcpy(psack_local, psack, sizeof(sack_block));
 
 		/* convert to local byte order (Jamshid Mahdavi) */
 		psack_local->sack_left  = ntohl(psack_local->sack_left);
 		psack_local->sack_right = ntohl(psack_local->sack_right);
 
-		++psack;
-		if ((char *)psack > ((char *)plast+1)) {
+		psack += sizeof(sack_block);
+		if (psack > ((u_char *)plast+1)) {
 		    /* this SACK block isn't all here */
 		    if (warn_printtrunc)
 			fprintf(stderr,
@@ -3205,7 +3202,7 @@ check_hw_dups(
 	    /* count it */
 	    ++tcb->num_hardware_dups;
 	    if (warn_printhwdups) {
-		printf("%s->%s: saw hardware duplicate of TCP seq %lu, IP ID %u (packet %lu == %lu)\n",
+		printf("%s->%s: saw hardware duplicate of TCP seq %u, IP ID %u (packet %lu == %lu)\n",
 		       tcb->host_letter,tcb->ptwin->host_letter,
 		       seq, id, pnum,pshd->hwdup_packnum);
 	    }

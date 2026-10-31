@@ -546,11 +546,11 @@ my_inet_ntop(int af, const char *src, char *dst, size_t size)
 	if (doing_shorthand) {
 	    doing_shorthand = FALSE;
 	    did_shorthand = TRUE;
-	    sprintf(dst, ":");
+	    snprintf(dst, 2, ":");
 	    dst += 1;
 	}
 
-	sprintf(dst, "%04x:", twobytes);
+	snprintf(dst, 6, "%04x:", twobytes);
 	dst += 5;
     }
 
