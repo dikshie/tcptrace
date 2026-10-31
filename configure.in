@@ -31,8 +31,11 @@ AC_LBL_DEVEL(V_CCOPT)
 dnl check for needed network libraries
 AC_LBL_LIBRARY_NET()
 
-dnl use fpurge if available, otherwise fflush
-AC_CHECK_FUNCS(fpurge)
+dnl check for headers
+AC_CHECK_HEADERS(stdio_ext.h)
+
+dnl use fpurge if available, otherwise __fpurge or fflush
+AC_CHECK_FUNCS(fpurge __fpurge)
 
 dnl use mkstemp if available, otherwise tempnam
 AC_CHECK_FUNCS(mkstemp)

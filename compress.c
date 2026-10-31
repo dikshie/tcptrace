@@ -61,6 +61,9 @@ static char const GCC_UNUSED rcsid[] =
 
 #include "compress.h"
 #include <sys/wait.h>
+#ifdef HAVE_STDIO_EXT_H
+#include <stdio_ext.h>
+#endif
 
 /*
  * OK, this stuff is a little complicated.  Here's why:
@@ -241,6 +244,8 @@ CompReopenFile(
 #ifdef HAVE_FPURGE
     /* needed for NetBSD and FreeBSD (at least) */
     fpurge(stdin);		/* discard input buffer */
+#elif defined(HAVE___FPURGE)
+    __fpurge(stdin);		/* glibc / Linux */
 #else /* HAVE_FPURGE */
     fflush(stdin);		/* discard input buffer */
 #endif /* HAVE_FPURGE */
@@ -600,6 +605,8 @@ PipeHelper(void)
     
 #ifdef HAVE_FPURGE     
      fpurge(stdin); // needed for NetBSD/FreeBSD
+#elif defined(HAVE___FPURGE)
+     __fpurge(stdin); // glibc / Linux
 #else
      fflush(stdin);
 #endif

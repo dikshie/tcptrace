@@ -22,7 +22,9 @@ if(ENABLE_WERROR)
 endif()
 
 # Check functions and headers
+check_include_file("stdio_ext.h" HAVE_STDIO_EXT_H)
 check_function_exists(fpurge HAVE_FPURGE)
+check_function_exists(__fpurge HAVE___FPURGE)
 check_function_exists(mkstemp HAVE_MKSTEMP)
 check_function_exists(valloc HAVE_VALLOC)
 check_function_exists(inet_pton HAVE_INET_PTON)
@@ -156,8 +158,14 @@ target_compile_definitions(tcptrace PRIVATE
     BUNZIP2="bunzip2"
 )
 
+if(HAVE_STDIO_EXT_H)
+    target_compile_definitions(tcptrace PRIVATE HAVE_STDIO_EXT_H=1)
+endif()
 if(HAVE_FPURGE)
     target_compile_definitions(tcptrace PRIVATE HAVE_FPURGE=1)
+endif()
+if(HAVE___FPURGE)
+    target_compile_definitions(tcptrace PRIVATE HAVE___FPURGE=1)
 endif()
 if(HAVE_MKSTEMP)
     target_compile_definitions(tcptrace PRIVATE HAVE_MKSTEMP=1)

@@ -51,7 +51,7 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libpcap-dev bison flex
+          sudo apt-get install -y libpcap-dev bison flex tzdata
 
       - name: Install dependencies (macOS)
         if: runner.os == 'macOS'
@@ -76,12 +76,15 @@ jobs:
         run: cmake --build build -j$(nproc 2>/dev/null || sysctl -n hw.ncpu)
 
       - name: Run CTest Regression Suite
+        env:
+          TZ: America/New_York
         run: ctest --test-dir build --output-on-failure
 
       - name: Test Autotools Build
         if: matrix.test_autotools
         env:
           CC: ${{ matrix.cc }}
+          TZ: America/New_York
         run: |
           ./configure
           make -j$(nproc 2>/dev/null || sysctl -n hw.ncpu)

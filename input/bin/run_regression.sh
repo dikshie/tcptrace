@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-set -e
 
 # Determine directories
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -54,7 +53,13 @@ echo "=== Running tcptrace Regression Suite (${MODE} mode) ==="
 echo "Using binary: ${TCPTRACE}"
 
 # Set deterministic environment
-export TZ=EST5EDT
+if [ -f /usr/share/zoneinfo/America/New_York ]; then
+    export TZ=America/New_York
+elif [ -f /usr/share/zoneinfo/EST5EDT ]; then
+    export TZ=EST5EDT
+else
+    export TZ="${TZ:-America/New_York}"
+fi
 export LC_ALL=C
 
 cd "${INPUT_DIR}"
@@ -82,7 +87,7 @@ PASSED=0
 
 # Filter function to strip non-deterministic lines
 filter_output() {
-    grep -v "elapsed wallclock" | grep -v "Ostermann's tcptrace -- version"
+    grep -v "elapsed wallclock" | grep -v "Ostermann's tcptrace -- version" || true
 }
 
 for FILE in $SUPPORTED_FILES; do
@@ -99,14 +104,24 @@ for FILE in $SUPPORTED_FILES; do
         "${TCPTRACE}" +t -nr "${FILE}" 2>&1 | filter_output > "${OUTDIR}/${FILE}.short"
         if ! diff -u "OUTPUTbench/${FILE}.short" "${OUTDIR}/${FILE}.short" > "${OUTDIR}/${FILE}.short.diff" 2>&1; then
             FILE_FAIL=1
+            echo ""
+            echo "  [FAIL] ${FILE}.short mismatch (first 20 lines):"
+            head -n 20 "${OUTDIR}/${FILE}.short.diff"
         fi
     fi
 
     # 2. Packets test
     if [ -f "OUTPUTbench/${FILE}.packets" ]; then
-        "${TCPTRACE}" +t -pn -E100 --checksum "${FILE}" 2>/dev/null | filter_output > "${OUTDIR}/${FILE}.packets"
+        "${TCPTRACE}" +t -pn -E100 --checksum "${FILE}" 2> "${OUTDIR}/${FILE}.packets.err" | filter_output > "${OUTDIR}/${FILE}.packets"
         if ! diff -u "OUTPUTbench/${FILE}.packets" "${OUTDIR}/${FILE}.packets" > "${OUTDIR}/${FILE}.packets.diff" 2>&1; then
             FILE_FAIL=1
+            echo ""
+            echo "  [FAIL] ${FILE}.packets mismatch (first 20 lines):"
+            head -n 20 "${OUTDIR}/${FILE}.packets.diff"
+            if [ -s "${OUTDIR}/${FILE}.packets.err" ]; then
+                echo "  Stderr output:"
+                head -n 10 "${OUTDIR}/${FILE}.packets.err"
+            fi
         fi
     fi
 
@@ -116,6 +131,9 @@ for FILE in $SUPPORTED_FILES; do
             "${TCPTRACE}" +t -lnrW "${FILE}" 2>&1 | filter_output > "${OUTDIR}/${FILE}.long"
             if ! diff -u "OUTPUTbench/${FILE}.long" "${OUTDIR}/${FILE}.long" > "${OUTDIR}/${FILE}.long.diff" 2>&1; then
                 FILE_FAIL=1
+                echo ""
+                echo "  [FAIL] ${FILE}.long mismatch (first 20 lines):"
+                head -n 20 "${OUTDIR}/${FILE}.long.diff"
             fi
         fi
 
@@ -126,6 +144,9 @@ for FILE in $SUPPORTED_FILES; do
             LC_ALL=C sort -k3 "OUTPUTbench/${FILE}.xplots.cksum" > "${OUTDIR}/${FILE}.bench.cksum"
             if ! diff -u "${OUTDIR}/${FILE}.bench.cksum" "${OUTDIR}/${FILE}.xplots.cksum" > "${OUTDIR}/${FILE}.cksum.diff" 2>&1; then
                 FILE_FAIL=1
+                echo ""
+                echo "  [FAIL] ${FILE}.cksum mismatch (first 20 lines):"
+                head -n 20 "${OUTDIR}/${FILE}.cksum.diff"
             fi
         fi
     fi
