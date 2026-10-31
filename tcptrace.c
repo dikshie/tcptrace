@@ -1637,6 +1637,7 @@ CheckArguments(
 	    printf("Looking for resource file '%s'\n", rc_path);
 
 	if (stat(rc_path,&statbuf) != 0) {
+	    free(rc_path);
 	    rc_path = NULL;
 	} else {
 	    int argc;
@@ -1657,6 +1658,7 @@ CheckArguments(
 			"Couldn't read resource file '%s'\n", rc_path);
 		fprintf(stderr,
 			"(either make the file readable or change its name)\n");
+		free(rc_path);
 		exit(-1);
 	    }
 	    
@@ -1735,6 +1737,9 @@ CheckArguments(
 
     if (rc_buf)
 	free(rc_buf);
+
+    if (rc_path)
+	free(rc_path);
 
     /* heuristic, I set "-t" in my config file, but they don't work inside */
     /* emacs shell windows, which is a pain.  If the terminal looks like EMACS, */

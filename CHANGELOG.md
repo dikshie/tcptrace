@@ -28,6 +28,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Deprecated Function Replacement**: Replaced `sprintf()` with bounded `snprintf()` in [`ipv6.c`](ipv6.c) and [`print.c`](print.c).
 
 ### Memory Safety & Bug Fixes
+- **LeakSanitizer Fixes**:
+  - Fixed direct memory leak in `CheckArguments` in [`tcptrace.c`](tcptrace.c) by freeing `rc_path`.
+  - Fixed memory leak in `FindBinary` in [`compress.c`](compress.c) by releasing `strdup` path buffer.
+  - Fixed duplicate heap allocation leak of `tcp_pair` structures in `trace_init()` in [`trace.c`](trace.c).
+- **Broken Pipe Handling**: Suppressed broken pipe warnings from early decompression pipe closure in [`compress.c`](compress.c).
+- **C99/C23 Stdbool Compatibility**: Renamed AST union member `bool` to `boolval` in [`filter.h`](filter.h), [`filter.c`](filter.c), and [`filt_parser.y`](filt_parser.y) to prevent identifier conflicts with standard `<stdbool.h>`.
 - **UBSan Alignment Fix**: Resolved unaligned memory access in TCP SACK option parsing in [`trace.c`](trace.c) by copying unaligned SACK option blocks using byte pointers and `memcpy()`.
 - **Function Return Mismatch**: Fixed missing return value and void signature for `traffic_init_files` in [`mod_traffic.c`](mod_traffic.c).
 
