@@ -118,7 +118,7 @@ enum optype {
 union Constant {
     u_llong	u_longint;
     llong	longint;
-    Bool	bool;
+    Bool	boolval;
     char	*string;
     ipaddr	*pipaddr;
 };

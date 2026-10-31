@@ -72,7 +72,7 @@
     long signed_long;
     u_long unsigned_long;
     ipaddr *pipaddr;
-    Bool bool;
+    Bool boolval;
     enum optype op;
     struct filter_node *pf;
 }
@@ -99,7 +99,7 @@
 %token <string> VARIABLE STRING
 %token <signed_long> SIGNED
 %token <unsigned_long> UNSIGNED
-%token <bool> BOOL
+%token <boolval> BOOL
 %token <pipaddr> IPADDR
 %type <op> relop
 %type <pf> expr leaf number
