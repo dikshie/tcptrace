@@ -400,7 +400,9 @@ plotter_done(void)
 	if(plotter_ix>0) {
 		if(xplot_all_files) {
 			fprintf(stdout,"%s\n",DSVal(xplot_cmd_buff));
-			system(DSVal(xplot_cmd_buff));
+			if (system(DSVal(xplot_cmd_buff)) < 0) {
+				perror("system(xplot)");
+			}
 			DSDestroy(&xplot_cmd_buff);
 		}
 	}

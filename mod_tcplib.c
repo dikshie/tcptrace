@@ -3137,7 +3137,9 @@ ReadOldFile(
 	char buffer[256];
 
 	/* read and discard the first line */
-	fgets(buffer, sizeof(buffer)-1, old);
+	if (!fgets(buffer, sizeof(buffer)-1, old)) {
+	    /* empty file */
+	}
 
 
 	/* Read in each line in the file and pick out the pieces of */

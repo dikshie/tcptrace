@@ -419,7 +419,9 @@ pread_f *is_ns(char *filename)
     }
 #endif /* __WIN32 */   
 
-    fgets(myline, 128, SYS_STDIN);
+    if (fgets(myline, 128, SYS_STDIN) == NULL) {
+	return(NULL);
+    }
     rlen = sscanf(myline, 
 		  "%c %lg %d %d %s %d %s %d %d.%hu %d.%hu %d %hu %d 0x%x %u %hu", 
 		  &tt, &junkd, &junk, &junk, (char *)&junks, &junk, 
