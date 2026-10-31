@@ -2791,13 +2791,6 @@ trace_init(void)
 
     /* create an array to keep track of which ones to ignore */
     ignore_pairs = (Bool *) MallocZ(max_tcp_pairs * sizeof(Bool));
-    if (!run_continuously) {
-        /* create an array to hold any pairs that we might create */
-        ttp = (tcp_pair **) MallocZ(max_tcp_pairs * sizeof(tcp_pair *));
-      
-        /* create an array to keep track of which ones to ignore */
-        ignore_pairs = (Bool *) MallocZ(max_tcp_pairs * sizeof(Bool));
-    }
 
     cainit();
     Minit();
