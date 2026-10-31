@@ -10,14 +10,9 @@
 
 ## Features
 
-- **Multi-format packet capture support**:
-  - `tcpdump` / `libpcap` (`.pcap`, `.dmp`)
-  - Sun `snoop` format
-  - Macintosh Etherpeek format
-  - HP / NetMetrix protocol analysis format
-  - LBL Network Simulator (`ns`) format
-  - NetScout ASCII format
-  - Endace Technology DAG (`ERF`) format
+- **Native packet capture support**:
+  - Native `tcpdump` / `libpcap` format (`.pcap`, `.pcapng`, `.dmp`, compressed `.gz`/`.bz2`/`.Z`)
+  - Streamlined and focused on standard PCAP captures, eliminating legacy proprietary capture parsers.
 - **Detailed connection analysis**:
   - Round-trip time (RTT) tracking and full-size sample distributions
   - Window advertisements, scale options, and zero-window probing
@@ -31,7 +26,7 @@
   - Dual build system support: **CMake** (modern) and **Autotools** (traditional `./configure && make`).
   - Zero compiler warnings on modern Apple Clang and Linux GCC/Clang.
   - Sanitizer-verified: clean AddressSanitizer (ASan) and UndefinedBehaviorSanitizer (UBSan) validation.
-  - Automated regression testing suite with 100% benchmark parity across 40 trace formats.
+  - Automated regression testing suite with 100% benchmark parity across 30 native tcpdump/pcap trace test suites.
 
 ---
 

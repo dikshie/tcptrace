@@ -101,32 +101,9 @@ DEFINES += -DLOAD_MODULE_REALTIME
 # output from tcpdump.
 # 
 ################################################################## 
-# define GROK_SNOOP if you want tcptrace to understand the output
-# format of Sun's "snoop" packet sniffer.
-DEFINES += -DGROK_SNOOP
 # define GROK_TCPDUMP if you want tcptrace to understand the output
-# format format of the LBL tcpdump program (see the file README.tcpdump
-# for other options)
+# format of the LBL tcpdump program (libpcap)
 DEFINES += -DGROK_TCPDUMP
-# define GROK_NETM if you want tcptrace to understand the output
-# format of HP's "netm" monitoring system's packet sniffer.
-DEFINES += -DGROK_NETM
-# define GROK_ETHERPEEK if you want tcptrace to understand the output
-# format of the Macintosh program Etherpeek
-DEFINES += -DGROK_ETHERPEEK
-# define GROK_NS if you want tcptrace to understand the output
-# format of the LBL network simulator, ns
-DEFINES += -DGROK_NS
-# define GROK_NLANR if you want tcptrace to understand the output
-# format of the various NLANL tools
-# (this doesn't work well yet, not recommended - Sat Dec 19, 1998)
-# DEFINES += -DGROK_NLANR
-# define GROK_NETSCOUT if you want tcptrace to understand ascii
-# formatted netscout output files
-DEFINES += -DGROK_NETSCOUT
-# define GROK_ERF if you want tcptrace to understand the output
-# format of the Endace Technology dagsnap program */
-DEFINES += -DGROK_ERF
 
 
 ################################################################## 
@@ -168,11 +145,11 @@ LDFLAGS += ${PCAP_LDFLAGS}
 
 
 # Source Files
-CFILES= avl.c compress.c erf.c etherpeek.c gcache.c mfiles.c names.c \
-	netm.c output.c plotter.c print.c rexmit.c snoop.c nlanr.c \
+CFILES= avl.c compress.c gcache.c mfiles.c names.c \
+	output.c plotter.c print.c rexmit.c \
 	tcpdump.c tcptrace.c thruput.c trace.c ipv6.c	\
 	filt_scanner.c filt_parser.c filter.c udp.c \
-	ns.c netscout.c version.c pool.c poolaccess.c \
+	version.c pool.c poolaccess.c \
 	dstring.c
 MODULES=mod_http.c mod_traffic.c mod_rttgraph.c mod_tcplib.c mod_collie.c \
 	mod_slice.c mod_realtime.c mod_inbounds.c
@@ -324,10 +301,6 @@ dyncounter.o: ipv6.h
 dyncounter.o: dstring.h
 dyncounter.o: pool.h
 dyncounter.o: dyncounter.h
-etherpeek.o: tcptrace.h
-etherpeek.o: ipv6.h
-etherpeek.o: dstring.h
-etherpeek.o: pool.h
 filt_parser.o: tcptrace.h
 filt_parser.o: ipv6.h
 filt_parser.o: dstring.h
@@ -363,22 +336,6 @@ names.o: ipv6.h
 names.o: dstring.h
 names.o: pool.h
 names.o: gcache.h
-netm.o: tcptrace.h
-netm.o: ipv6.h
-netm.o: dstring.h
-netm.o: pool.h
-netscout.o: tcptrace.h
-netscout.o: ipv6.h
-netscout.o: dstring.h
-netscout.o: pool.h
-nlanr.o: tcptrace.h
-nlanr.o: ipv6.h
-nlanr.o: dstring.h
-nlanr.o: pool.h
-ns.o: tcptrace.h
-ns.o: ipv6.h
-ns.o: dstring.h
-ns.o: pool.h
 output.o: tcptrace.h
 output.o: ipv6.h
 output.o: dstring.h
@@ -401,10 +358,6 @@ rexmit.o: tcptrace.h
 rexmit.o: ipv6.h
 rexmit.o: dstring.h
 rexmit.o: pool.h
-snoop.o: tcptrace.h
-snoop.o: ipv6.h
-snoop.o: dstring.h
-snoop.o: pool.h
 tcpdump.o: tcptrace.h
 tcpdump.o: ipv6.h
 tcpdump.o: dstring.h

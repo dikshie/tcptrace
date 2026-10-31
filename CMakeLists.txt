@@ -91,24 +91,17 @@ set(TCPTRACE_SOURCES
     compress.c
     dstring.c
     dyncounter.c
-    erf.c
-    etherpeek.c
     filter.c
     gcache.c
     ipv6.c
     mfiles.c
     names.c
-    netm.c
-    netscout.c
-    nlanr.c
-    ns.c
     output.c
     plotter.c
     pool.c
     poolaccess.c
     print.c
     rexmit.c
-    snoop.c
     tcpdump.c
     tcptrace.c
     thruput.c
@@ -146,13 +139,7 @@ target_compile_definitions(tcptrace PRIVATE
     LOAD_MODULE_RTTGRAPH
     LOAD_MODULE_COLLIE
     LOAD_MODULE_REALTIME
-    GROK_SNOOP
     GROK_TCPDUMP
-    GROK_NETM
-    GROK_ETHERPEEK
-    GROK_NS
-    GROK_NETSCOUT
-    GROK_ERF
     YYTEXT_POINTER=1
     GUNZIP="gunzip"
     BUNZIP2="bunzip2"

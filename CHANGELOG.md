@@ -20,7 +20,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Standard Library Cleanup**: Removed conflicting `#define memcpy` macro override in [`tcptrace.h`](tcptrace.h) and obsolete `MemCpy` in [`tcptrace.c`](tcptrace.c).
 - **Public libpcap API**: Replaced non-standard internal `pcap_offline_read` with standard `pcap_dispatch` in [`tcpdump.c`](tcpdump.c).
 - **Format String Hardening**: Fixed `%ld` / `%lu` format specifier mismatches on 64-bit systems in [`snoop.c`](snoop.c), [`etherpeek.c`](etherpeek.c), [`trace.c`](trace.c), and [`mod_http.c`](mod_http.c).
-- **Pointer Memory Access Safety**: Replaced unsafe `memset(ptr, 0, sizeof(ptr))` patterns in [`output.c`](output.c) and [`tcptrace.c`](tcptrace.c) with `strdup()`.
+- **Native tcpdump Focus**: Streamlined capture reading to exclusively support standard `tcpdump` / `libpcap` format (`.pcap`, `.pcapng`, `.dmp`, compressed), deleting dead legacy format parsers (`snoop.c`, `etherpeek.c`, `netm.c`, `netscout.c`, `erf.c`, `ns.c`, `nlanr.c`).
+- **Compiler Hardening & Safety**:
+  - Fixed `-Werror=stringop-overflow` in [`trace.c`](trace.c) by computing safe destination bounds (`sizeof(buf1) - strlen(buf1) - 1`) for `strncat()`.
+  - Fixed compiler warnings for unused return values (`warn_unused_result`) on modern GCC in [`plotter.c`](plotter.c), [`ns.c`](ns.c), and [`mod_tcplib.c`](mod_tcplib.c).
+- **Stream Purging on Linux**: Added support for glibc `__fpurge()` via `<stdio_ext.h>` in [`compress.c`](compress.c) to properly purge stdio buffers when reopening compressed files.
 - **Deprecated Function Replacement**: Replaced `sprintf()` with bounded `snprintf()` in [`ipv6.c`](ipv6.c) and [`print.c`](print.c).
 
 ### Memory Safety & Bug Fixes
