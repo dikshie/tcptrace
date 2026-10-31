@@ -61,6 +61,7 @@ static char const GCC_UNUSED rcsid[] =
 
 #include "compress.h"
 #include <sys/wait.h>
+#include <fcntl.h>
 #ifdef HAVE_STDIO_EXT_H
 #include <stdio_ext.h>
 #endif
@@ -369,6 +370,11 @@ CompSaveHeader(
 	f_orig_stdin = f_stream;  /* remember where it is */
     } else {
 	fclose(f_stream);
+	if (child_pid != -1) {
+	    kill(child_pid, SIGTERM);
+	    waitpid(child_pid, NULL, 0);
+	    child_pid = -1;
+	}
     }
 
     /* re-open the file as stdin */
@@ -443,6 +449,13 @@ CompOpenPipe(
     if (child_pid == 0) {
 	/* child */
 	dup2(fdpipe[1],1);  /* redirect child's stdout to pipe */
+
+	/* redirect child's stderr to /dev/null to prevent "Broken pipe" when pipe is closed early */
+	int devnull = open("/dev/null", O_WRONLY);
+	if (devnull != -1) {
+	    dup2(devnull, 2);
+	    close(devnull);
+	}
 
 	/* close all other FDs - lazy, but close enough for our purposes  :-) */
 	for (i=3; i < 100; ++i) close(i);

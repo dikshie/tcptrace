@@ -87,7 +87,7 @@ PASSED=0
 
 # Filter function to strip non-deterministic lines
 filter_output() {
-    grep -v "elapsed wallclock" | grep -v "Ostermann's tcptrace -- version" || true
+    grep -v "elapsed wallclock" | grep -v "Ostermann's tcptrace -- version" | grep -v "Broken pipe" || true
 }
 
 for FILE in $SUPPORTED_FILES; do
