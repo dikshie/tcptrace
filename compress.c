@@ -130,8 +130,8 @@ static char *FindBinary(
 	return(NULL);
     }
 
-    path = strdup(path);
-    pch = path;
+    char *orig_path = strdup(path);
+    pch = orig_path;
 
     while (pch && *pch) {
 	pch_colon = strchr(pch,':');
@@ -145,6 +145,7 @@ static char *FindBinary(
 	if (access(abspath,X_OK) == 0) {
 	    if (debug>1)
 		fprintf(stderr,"FindBinary: found binary '%s'\n", abspath);
+	    free(orig_path);
 	    return(abspath);
 	}
 
@@ -153,6 +154,8 @@ static char *FindBinary(
 	else
 	    pch = NULL;
     }
+
+    free(orig_path);
 
     if (debug)
 	fprintf(stderr,"FindBinary: couldn't find binary '%s' in PATH\n",
@@ -174,8 +177,12 @@ WhichFormat(
     int i;
 
     /* check the "cache" :-) */
-    if (pf_file_cache && (strcmp(filename,pf_file_cache) == 0)) {
-	return(pf_cache);
+    if (pf_file_cache) {
+	if (strcmp(filename,pf_file_cache) == 0) {
+	    return(pf_cache);
+	}
+	free(pf_file_cache);
+	pf_file_cache = NULL;
     }
 
     len = strlen(filename);
@@ -290,6 +297,10 @@ CompSaveHeader(
 	int fd;
 	extern int mkstemp(char *template);
 
+	if (tempfile) {
+	    unlink(tempfile);
+	    free(tempfile);
+	}
 	/* grab a writable string to keep picky compilers happy */
 	tempfile = strdup("/tmp/trace_hdrXXXXXXXX");
 
@@ -402,7 +413,8 @@ CompOpenPipe(
     }
 
     /* save the path for later... */
-    pf->comp_bin = strdup(abspath);
+    if (*pf->comp_bin != '/')
+	pf->comp_bin = strdup(abspath);
 
     /* filter args */
     for (i=0; i < COMP_MAX_ARGS; ++i) {
@@ -735,6 +747,12 @@ CompCloseFile(
 
     /* zero out some globals */
     header_length = -1;
+
+    if (tempfile) {
+	unlink(tempfile);
+	free(tempfile);
+	tempfile = NULL;
+    }
 }
 
 
