@@ -913,20 +913,20 @@ static char * formatGetString(char * s)
   int len = strlen(s);
   int i = 0;
   int j = 0;
-  char *buf = (char *)malloc(len);
-  char ascii[2];
+  char *buf = (char *)malloc(len + 1);
+  if (!buf)
+    return NULL;
   while (i < len) {
-    if (s[i] == '%') {
-      ascii[0] = s[i+1];
-      ascii[1] = s[i+2];
-      buf[j++] = atoi(ascii);
+    if (s[i] == '%' && (i + 2 < len)) {
+      char hex[3] = { s[i+1], s[i+2], '\0' };
+      buf[j++] = (char)strtol(hex, NULL, 16);
       i = i+3;
     } else {
       buf[j++] = s[i];
       i++;
     }
   }
-  buf[j] = 0;
+  buf[j] = '\0';
   return buf;
 }
 
@@ -983,31 +983,32 @@ FindGets(
 	   */
 	     MethodCode method = MethodCodeUnknown;
 	     methodlen = 0;
-	     if (strncasecmp(pch, "options ", 8) == 0) {
+	     long rem = (char *)plast - pch + 1;
+	     if (rem >= 8 && strncasecmp(pch, "options ", 8) == 0) {
 		methodlen = 8;
 		method = MethodCodeOptions;
 	     }
-	     else if (strncasecmp(pch, "get ", 4) == 0) {
+	     else if (rem >= 4 && strncasecmp(pch, "get ", 4) == 0) {
 		methodlen = 4;
 		method = MethodCodeGet;
 	     }
-	     else if (strncasecmp(pch, "head ", 5) == 0) {
+	     else if (rem >= 5 && strncasecmp(pch, "head ", 5) == 0) {
 		methodlen = 5;
 		method = MethodCodeHead;
 	     }
-	     else if (strncasecmp(pch, "post ", 5) == 0) {
+	     else if (rem >= 5 && strncasecmp(pch, "post ", 5) == 0) {
 		methodlen = 5;
 		method = MethodCodePost;
 	     }
-	     else if (strncasecmp(pch, "put ", 4) == 0) {
+	     else if (rem >= 4 && strncasecmp(pch, "put ", 4) == 0) {
 		methodlen = 4;
 		method = MethodCodePut;
 	     }
-	     else if (strncasecmp(pch, "delete ", 7) == 0) {
+	     else if (rem >= 7 && strncasecmp(pch, "delete ", 7) == 0) {
 		methodlen = 7;
 		method = MethodCodeDelete;
 	     }
-	     else if (strncasecmp(pch, "trace ", 6) == 0) {
+	     else if (rem >= 6 && strncasecmp(pch, "trace ", 6) == 0) {
 		methodlen = 6;
 		method = MethodCodeTrace;
 	     }
@@ -1038,16 +1039,15 @@ FindGets(
 	    
 	  case (GetStateFinishMethod): {
 	     /* grab the GET string */
-	     for (j=0,pch2 = pch; ; ++j,++pch2) {
-		if ((*pch2 == '\n') || (*pch2 == '\r') ||
-		    (j >= sizeof(getbuf)-1)) {
-		   getbuf[j] = '\00';
-		   pch = pch2;  /* skip forward */
-		   state = GetStateFindContentLength;
+	     for (j=0,pch2 = pch; pch2 <= (char *)plast && j < (int)sizeof(getbuf)-1; ++j,++pch2) {
+		if ((*pch2 == '\n') || (*pch2 == '\r')) {
 		   break;
 		}
 		getbuf[j] = *pch2;
 	     }
+	     getbuf[j] = '\00';
+	     pch = pch2;  /* skip forward */
+	     state = GetStateFindContentLength;
 	     pget->get_string = formatGetString(getbuf);
 	     
 	     /* grab the time stamps */
@@ -1060,13 +1060,26 @@ FindGets(
 	     
 	  /* Locate content-length field, if any */
 	   case (GetStateFindContentLength): {
-	      
-	      if (strncasecmp(pch, "\r\nContent-Length:", 17) == 0) {
+	      long rem = (char *)plast - pch + 1;
+	      if (rem >= 17 && strncasecmp(pch, "\r\nContent-Length:", 17) == 0) {
 		 /* Get content-length field */
-		 contentLength = atoi(&pch[17]);
 		 pch += 17;
+		 while (pch <= (char *)plast && (*pch == ' ' || *pch == '\t')) {
+		    pch++;
+		 }
+		 char clbuf[32];
+		 int k = 0;
+		 while (pch <= (char *)plast && *pch >= '0' && *pch <= '9' && k < (int)sizeof(clbuf)-1) {
+		    clbuf[k++] = *pch++;
+		 }
+		 clbuf[k] = '\0';
+		 long long cl = atoll(clbuf);
+		 if (cl > 0)
+		    contentLength = (unsigned long long)cl;
+		 else
+		    contentLength = 0;
 	      }
-	      else if (strncmp(pch, "\r\n\r\n", 4) == 0) {
+	      else if (rem >= 4 && strncmp(pch, "\r\n\r\n", 4) == 0) {
 		 /* No content-length header detected, assume */
 		 /* zero.  Fall through (effective). */
 		 /* contentLength = 0; */
@@ -1079,14 +1092,19 @@ FindGets(
 	     break;
 	     
 	  case (GetStateFinishHeader): {
-	     if (strncmp(pch, "\r\n\r\n", 4) == 0) {
+	     long rem = (char *)plast - pch + 1;
+	     if (rem >= 4 && strncmp(pch, "\r\n\r\n", 4) == 0) {
 		
 		/* Found end of header */
 		pch += 4;
 		
 		/* Find end of response body. */
 		if (contentLength > 0) {
-		   pch += contentLength;
+		   if (contentLength <= (unsigned long long)((char *)plast - pch + 1)) {
+		      pch += contentLength;
+		   } else {
+		      pch = (char *)plast + 1;
+		   }
 		}
 		else {
 		   /* XXX What if a POST with no content-length? */

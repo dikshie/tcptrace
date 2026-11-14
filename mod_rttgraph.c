@@ -203,7 +203,7 @@ AddSample(
     psamp->samples[psamp->num_samples++] = sample;
     if (sample > psamp->max)
 	psamp->max = sample;
-    if (sample < psamp->max)
+    if (sample < psamp->min)
 	psamp->min = sample;
 }
 
@@ -305,10 +305,10 @@ DoHist(
     /* init */
     hist3d.rtt.num_buckets = 0;
     memset(&hist3d.rtt,'\00',sizeof(struct hist));
-    MakeBuckets(&hist3d.rtt, psamp->num_samples);
+    MakeBuckets(&hist3d.rtt, psamp->max + 1);
     for (i=0; i < NUM_SLICES; ++i) {
 	memset(&hist3d.rtt_diff_slices[i],'\00',sizeof(struct hist));
-        MakeBuckets(&hist3d.rtt_diff_slices[i], psamp->num_samples);
+        MakeBuckets(&hist3d.rtt_diff_slices[i], psamp->max + 1);
     }
 
     /* calculate the global histogram */
@@ -325,12 +325,12 @@ DoHist(
     slice = 0;
     base_z = 0;
     slice_size = psamp->num_samples / NUM_SLICES;
-    for (i=0; i < psamp->num_samples; ++i) {
-	u_short count = hist3d.rtt.buckets[i];
+    for (i=0; i < hist3d.rtt.num_buckets; ++i) {
+	u_long count = hist3d.rtt.buckets[i];
 
 	sum += count;
 
-	if (sum > slice_size) {
+	if (sum > slice_size && slice < NUM_SLICES) {
 	    hist3d.rtt_diff_slices[slice].z = base_z;
 	    ++slice;
 	    sum = 0;
@@ -348,9 +348,11 @@ DoHist(
 
 	/* see which slice holds the prev_rtt */ 
 	for (slice = NUM_SLICES-1; slice >= 0; --slice) {
-	    if (prev_rtt > hist3d.rtt_diff_slices[slice].z)
+	    if (prev_rtt >= hist3d.rtt_diff_slices[slice].z)
 		break;
 	}
+	if (slice < 0)
+	    slice = 0;
 
 	++hist3d.rtt_diff_slices[slice].buckets[rtt];
 	++hist3d.rtt_diff_slices[slice].num_samples;
@@ -395,6 +397,13 @@ DoHist(
 #endif /* BROKEN */
 
     Mfclose(f);
+
+    if (hist3d.rtt.buckets)
+	free(hist3d.rtt.buckets);
+    for (i=0; i < NUM_SLICES; ++i) {
+	if (hist3d.rtt_diff_slices[i].buckets)
+	    free(hist3d.rtt_diff_slices[i].buckets);
+    }
 }
 
 

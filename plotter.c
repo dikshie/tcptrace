@@ -302,6 +302,7 @@ new_plotter(
     PLOTTER pl;
     MFILE *f;
     struct plotter_info *ppi;
+    char buf[256];
 
     ++plotter_ix;
     if (plotter_ix >= max_plotters) {
@@ -314,7 +315,6 @@ new_plotter(
     if (filename == NULL)
 	filename = TSGPlotName(plast,pl,suffix);
     else if (suffix != NULL) {
-	char buf[100];
 	snprintf(buf,sizeof(buf),"%s%s", filename, suffix);
 	filename = buf;
     }
@@ -374,17 +374,19 @@ plotter_done(void)
 	 WritePlotHeader(pl);
        
 	if (!ignore_non_comp ||
-	    ((ppi->p2plast != NULL) && (ConnComplete(ppi->p2plast->ptp)))) {
+	    (ppi->p2plast == NULL) ||
+	    ConnComplete(ppi->p2plast->ptp)) {
 	    Mfprintf(f,"go\n");
 	    Mfclose(f);
 	} else {
-	    fname = ppi->p2plast->tsg_plotfile;
+	    fname = (ppi->p2plast->tsg_plotfile != NULL) ? ppi->p2plast->tsg_plotfile : ppi->filename;
 	    if (debug)
 		fprintf(stderr,"Removing incomplete plot file '%s'\n",
 			fname);
 	    Mfclose(f);
-	    if (unlink(fname) != 0)
+	    if (fname && unlink(fname) != 0)
 		perror(fname);
+	    continue;
 	}
 
 	if(xplot_all_files){
