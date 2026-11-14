@@ -196,7 +196,7 @@ WhichFormat(
 		    filename,pf->comp_suffix,pf->comp_bin);
 	/* check for suffix match */
 	lens = strlen(pf->comp_suffix);
-	if (strcmp(filename+len-lens, pf->comp_suffix) == 0) {
+	if (len >= lens && strcmp(filename+len-lens, pf->comp_suffix) == 0) {
 	    if (debug>1)
 		fprintf(stderr,"Suffix match!   '%s' against '%s'\n",
 			filename,pf->comp_suffix);
@@ -261,13 +261,19 @@ CompReopenFile(
 
     /* yank the FD out from under stdin and point to the pipe */
     dup2(fd,0);
+    close(fd);
 
     /* skip forward in the stream to the same place that we were in */
     /* for the header file */
     len = fread(buf,1,pos,stdin);
     if ((len == 0) && ferror(stdin)) {
 	perror("read forward in stdin");
+	fclose(stdin);
 	exit(-1);
+    }
+    if ((pos > 0) && (len == 0)) {
+	fclose(stdin);
+	return(NULL);
     }
 
     /* OK, I guess we're all set... */
@@ -337,11 +343,15 @@ CompSaveHeader(
     len = fread(buf,1,COMP_HDR_SIZE,f_stream);
     if ((len == 0) && ferror(f_stream)) {
 	perror("read pipe stream for header");
+	fclose(f_stream);
+	fclose(f_file);
 	exit(-1);
     }
 
     if (len == 0) {
 	/* EOF, failure */
+	fclose(f_stream);
+	fclose(f_file);
 	return(NULL);
     }
 

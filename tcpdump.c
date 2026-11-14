@@ -77,34 +77,37 @@ static pcap_t *pcap;
 static struct ether_header eth_header;
 #define EH_SIZE sizeof(struct ether_header)
 static char *ip_buf;  /* [IP_MAXPACKET] */
-static struct pcap_pkthdr *callback_phdr;
+static struct pcap_pkthdr callback_phdr_buf;
 static void *callback_plast;
+static Bool callback_valid;
 
 
-static int callback(
-    char *user,
-    struct pcap_pkthdr *phdr,
-    char *buf)
+static void callback(
+    u_char *user,
+    const struct pcap_pkthdr *phdr,
+    const u_char *buf)
 {
     int type;
     int iplen;
-    static int offset = -1;
+    int offset = -1;
   
     struct vlanh{
       tt_uint16 vlan_num;
       tt_uint16 vlan_proto;
     } *vlanhptr;
+
+    (void)user;
   
     iplen = phdr->caplen;
     if (iplen > IP_MAXPACKET)
 	iplen = IP_MAXPACKET;
     if (iplen < sizeof(struct ether_header) + sizeof(struct ip))
-      return(-1);
+      return;
 
     type = pcap_datalink(pcap);
 
     /* remember the stuff we always save */
-    callback_phdr = phdr;
+    callback_phdr_buf = *phdr;
 
     /* kindof ugly, but about the only way to make them fit together :-( */
     switch (type) {
@@ -112,17 +115,19 @@ static int callback(
 	/* for some reason, the windows version of tcpdump is using */
 	/* this.  It looks just like ethernet to me */
       case PCAP_DLT_EN10MB:
-	offset = find_ip_eth(buf); /* Here we check if we are dealing with Straight Ethernet encapsulation or PPPoE */
+	offset = find_ip_eth((char *)buf); /* Here we check if we are dealing with Straight Ethernet encapsulation or PPPoE */
 	memcpy(&eth_header, buf, EH_SIZE); /* save ether header */
 	switch (offset)
 	{
 		case EH_SIZE: /* straight Ethernet encapsulation */
+			if (iplen < offset) return;
 			memcpy((char *)ip_buf,buf+offset,iplen-offset);
 			callback_plast = ip_buf+iplen-offset-1;
 			break;
 		case PPPOE_SIZE: /* PPPoE encapsulation */
 			/* we use a fake ether type here */
 			eth_header.ether_type = htons(ETHERTYPE_IP);
+			if (iplen < offset) return;
 			memcpy((char *)ip_buf,buf+offset,iplen-offset);
 			callback_plast = ip_buf+iplen-offset-1;
 			break;
@@ -136,6 +141,7 @@ static int callback(
 			       (ntohs(vlanhptr->vlan_proto) == ETHERTYPE_IPV6)
 			     ) {
 			    offset=EH_SIZE+sizeof(struct vlanh);
+			    if (iplen < offset) return;
 			    memcpy((char *)ip_buf,buf+offset,iplen-offset);
 			    callback_plast = ip_buf+iplen-offset-1;
 			    /* Set ethernet type as whatever followed the dumb
@@ -146,58 +152,65 @@ static int callback(
 			    break;
 			    }
 			}	  
-			return (-1);
+			return;
 		default: /* should not be used, but we never know ... */
-			return (-1);
+			return;
 	}
 	break;
       case PCAP_DLT_IEEE802:
 	/* just pretend it's "normal" ethernet */
 	offset = 14;		/* 22 bytes of IEEE cruft */
 	memcpy(&eth_header,buf,EH_SIZE);  /* save ether header */
+	if (iplen < offset) return;
 	memcpy(ip_buf,buf+offset,iplen-offset);
 	callback_plast = (char *)ip_buf+iplen-offset-1;
 	break;
       case PCAP_DLT_SLIP:
-	memcpy(ip_buf,buf+16,iplen-16);
-	callback_plast = (char *)ip_buf+iplen-16-1;
+	offset = 16;
+	if (iplen < offset) return;
+	memcpy(ip_buf,buf+offset,iplen-offset);
+	callback_plast = (char *)ip_buf+iplen-offset-1;
 	break;
       case PCAP_DLT_PPP:
 	/* deals with raw PPP and also with HDLC PPP frames */
-	offset = find_ip_ppp(buf);
-	if (offset < 0) /* Not an IP packet */
-		return (-1);
+	offset = find_ip_ppp((char *)buf);
+	if (offset < 0 || iplen < offset) /* Not an IP packet */
+		return;
 	memcpy((char *)ip_buf,buf+offset,iplen-offset);
 	callback_plast = ip_buf+iplen-offset-1;
 	break;
       case PCAP_DLT_FDDI:
-	if (offset < 0)
-	      offset = find_ip_fddi(buf,iplen);
-	if (offset < 0)
-	      return(-1);
+	offset = find_ip_fddi((char *)buf,iplen);
+	if (offset < 0 || iplen < offset)
+	      return;
 	memcpy((char *)ip_buf,buf+offset,iplen-offset);
 	callback_plast = ip_buf+iplen-offset-1;
 	break;
       case PCAP_DLT_NULL:
 	/* no phys header attached */
 	offset = 4;
+	if (iplen < offset) return;
 	memcpy((char *)ip_buf,buf+offset,iplen-offset);
 	callback_plast = ip_buf+iplen-offset-1;
 	break;
       case PCAP_DLT_ATM_RFC1483:
 	/* ATM RFC1483 - LLC/SNAP ecapsulated atm */
-	memcpy((char*)ip_buf,buf+8,iplen-8);
+	offset = 8;
+	if (iplen < offset) return;
+	memcpy((char*)ip_buf,buf+offset,iplen-offset);
 	callback_plast = ip_buf+iplen-8-1;
 	break;
       case PCAP_DLT_RAW:
 	/* raw IP */
 	offset = 0;
+	if (iplen < offset) return;
 	memcpy((char *)ip_buf,buf+offset,iplen-offset);
 	callback_plast = ip_buf+iplen-offset-1;
 	break;
       case PCAP_DLT_LINUX_SLL:
 	/* linux cooked socket */
 	offset = 16;
+	if (iplen < offset) return;
 	memcpy((char *)ip_buf, buf+offset, iplen-offset);
 	callback_plast = ip_buf+iplen-offset-1;
 	break;
@@ -205,22 +218,26 @@ static int callback(
       // and Prism2 headers to get to the IP packet.
       case PCAP_DLT_IEEE802_11:
 	offset=24+8;// 802.11 header + LLC/SNAP header
+	if (iplen < offset) return;
 	memcpy((char *)ip_buf, buf+offset, iplen-offset);
 	callback_plast = ip_buf+iplen-offset-1;
 	break;
       case PCAP_DLT_IEEE802_11_RADIO:
 	offset=64+24;//WLAN header + 802.11 header
 	memcpy(&eth_header,buf,EH_SIZE); // save ethernet header
+	if (iplen < offset) return;
 	memcpy((char *)ip_buf, buf+offset, iplen-offset);
 	callback_plast = ip_buf+iplen-offset-1;
 	break;
       case PCAP_DLT_PRISM2:
 	offset=144+24+8; // PRISM2+IEEE 802.11+ LLC/SNAP headers
+	if (iplen < offset) return;
 	memcpy((char *)ip_buf, buf+offset, iplen-offset);
 	callback_plast = ip_buf+iplen-offset-1;
 	break;
       case PCAP_DLT_C_HDLC:
 	offset=4;
+	if (iplen < offset) return;
 	memcpy((char *)ip_buf, buf+offset, iplen-offset);
 	callback_plast = (char *)ip_buf+iplen-offset-1;
 	break;
@@ -230,7 +247,7 @@ static int callback(
 	exit(1);
     }
     
-    return(0);
+    callback_valid = TRUE;
 }
 
 
@@ -248,7 +265,8 @@ pread_tcpdump(
     int ret;
 
     while (1) {
-	if ((ret = pcap_dispatch(pcap,1,(pcap_handler)callback,0)) != 1) {
+	callback_valid = FALSE;
+	if ((ret = pcap_dispatch(pcap,1,(pcap_handler)callback,NULL)) != 1) {
 	    /* prob EOF */
 
 	    if (ret == -1) {
@@ -263,19 +281,22 @@ pread_tcpdump(
 	    return(0);
 	}
 
+	if (!callback_valid)
+	    continue;
+
 	/* at least one tcpdump implementation (AIX) seems to be */
 	/* storing NANOseconds in the usecs field of the timestamp. */
 	/* This confuses EVERYTHING.  Try to compensate. */
 	{
 	    static Bool bogus_nanoseconds = FALSE;
-	    if ((callback_phdr->ts.tv_usec >= US_PER_SEC) ||
+	    if ((callback_phdr_buf.ts.tv_usec >= US_PER_SEC) ||
 		(bogus_nanoseconds)) {
 		if (!bogus_nanoseconds) {
 		    fprintf(stderr,
 			    "tcpdump: attempting to adapt to bogus nanosecond timestamps\n");
 		    bogus_nanoseconds = TRUE;
 		}
-		callback_phdr->ts.tv_usec /= 1000;
+		callback_phdr_buf.ts.tv_usec /= 1000;
 	    }
 	}
 
@@ -285,10 +306,10 @@ pread_tcpdump(
 	*ppip      = (struct ip *) ip_buf;
 	*pplast    = callback_plast; /* last byte in IP packet */
 	/* (copying time structure in 2 steps to avoid RedHat brain damage) */
-	ptime->tv_usec = callback_phdr->ts.tv_usec;
-	ptime->tv_sec = callback_phdr->ts.tv_sec;
-	*plen      = callback_phdr->len;
-	*ptlen     = callback_phdr->caplen;
+	ptime->tv_usec = callback_phdr_buf.ts.tv_usec;
+	ptime->tv_sec = callback_phdr_buf.ts.tv_sec;
+	*plen      = callback_phdr_buf.len;
+	*ptlen     = callback_phdr_buf.caplen;
 
 	/* if it's not IP, then skip it */
 	if ((ntohs(eth_header.ether_type) != ETHERTYPE_IP) &&

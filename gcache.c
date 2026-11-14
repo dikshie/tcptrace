@@ -134,7 +134,7 @@ static struct cacheblk catab[CA_NUMCACHES];
 
 
 /* useful macros */
-#define ISBADCID(cid) ((cid < 0) || (cid > CA_NUMCACHES) || \
+#define ISBADCID(cid) ((cid < 0) || (cid >= CA_NUMCACHES) || \
 		       (catab[cid].cb_status != CB_INUSE))
 #define HASHTOIX(hash,pcb) ((hash) % (pcb->cb_hashsize))
 

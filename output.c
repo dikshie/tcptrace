@@ -819,7 +819,7 @@ StatLineField(
     u_long arg,
     int	f_rightside)
 {
-    char valbuf[20];
+    char valbuf[21];
     
     /* determine the value to print */
     snprintf(valbuf,sizeof(valbuf),format,arg);

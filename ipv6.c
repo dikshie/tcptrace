@@ -139,7 +139,7 @@ findheader(
     void **pplast)
 {
     struct ipv6 *pip6 = (struct ipv6 *)pip;
-    char nextheader;
+    u_char nextheader;
     struct ipv6_ext *pheader;
     void *theheader;
 
@@ -187,6 +187,9 @@ findheader(
     if (!PIP_ISV6(pip))
 	return (-1);
 
+    if ((char *)pip + sizeof(struct ipv6) - 1 > (char *)*pplast)
+	return (1);
+
     /* find the first header */
     nextheader = pip6->ip6_nheader;
     pheader = (struct ipv6_ext *)(pip6+1);
@@ -226,6 +229,9 @@ findheader(
 	  {
 	      struct ipv6_ext_frag *pfrag = (struct ipv6_ext_frag *)pheader;
 
+	      if ((char *)pheader + sizeof(struct ipv6_ext_frag) - 1 > (char *)*pplast)
+		  return (1);
+
 	      /* if this isn't the FIRST fragment, there won't be a TCP header
 		 anyway */
 	      if ((pfrag->ip6ext_fr_offset&0xfc) != 0) {
@@ -248,15 +254,21 @@ findheader(
 	  case IPPROTO_HOPOPTS:
 	  case IPPROTO_ROUTING:
 	  case IPPROTO_DSTOPTS:
+	  {
+	      u_int extlen;
+	      if ((char *)pheader + sizeof(struct ipv6_ext) - 1 > (char *)*pplast)
+		  return (1);
+
 	      nextheader = pheader->ip6ext_nheader;
 
 		  /* As per RFC 2460 : ip6ext_len specifies the extended
 		     header length, in units of 8 octets *not including* the
 			 first 8 octets. */
-		  
+	      extlen = 8 + ((u_int)(pheader->ip6ext_len))*8;
 	      pheader = (struct ipv6_ext *)
-		  ((char *)pheader + 8 + (pheader->ip6ext_len)*8);
+		  ((char *)pheader + extlen);
 	      break;
+	  }
 	    /* non-tcp protocols, so we're finished. */
 	  case IPPROTO_NONE:
 	  case IPPROTO_ICMPV6:
@@ -264,11 +276,18 @@ findheader(
 
 	  /* I "think" that we can just skip over it, but better be careful */
 	  default:
+	  {
+	      u_int extlen;
+	      if ((char *)pheader + sizeof(struct ipv6_ext) - 1 > (char *)*pplast)
+		  return (1);
+
 	      nextheader = pheader->ip6ext_nheader;
 
+	      extlen = 8 + ((u_int)(pheader->ip6ext_len))*8;
 	      pheader = (struct ipv6_ext *)
-		  ((char *)pheader + 8 + (pheader->ip6ext_len)*8);
+		  ((char *)pheader + extlen);
 	      break;
+	  }
 
 	} /* end switch */
     }  /* end loop */
@@ -330,54 +349,70 @@ getudp(
  */
 int gethdrlength (struct ip *pip, void *plast)
 {
-    int length, nextheader;
-    char *pheader;
-    struct ipv6 *pipv6;
+    int length;
+    u_char nextheader;
+    u_char *pheader;
     
     if (PIP_ISV6(pip)) {
+	if ((char *)pip + 40 > (char *)plast + 1)
+	    return -1;
+
 	length = 40;
 	
-	pheader = (char *) pip;
+	pheader = (u_char *) pip;
 	nextheader = *(pheader + 6);
 	pheader += 40;
 	
-	pipv6 = (struct ipv6 *) pip;
 	while (1)
 	{
-	    if (nextheader == IPPROTO_NONE)
+	    if (nextheader == IPPROTO_NONE ||
+		nextheader == IPPROTO_TCP ||
+		nextheader == IPPROTO_UDP ||
+		nextheader == IPPROTO_ICMPV6)
 		return length;
-	    if (nextheader == IPPROTO_TCP)
-		return length;
-	    if (nextheader == IPPROTO_UDP)
-		return length;
+
 	    if (nextheader == IPPROTO_FRAGMENT)
 	    {
+		if ((char *)pheader + 8 > (char *)plast + 1)
+		    return -1;
 		nextheader = *pheader;
 		pheader += 8;
 		length += 8;
 	    }
-	    if ((nextheader == IPPROTO_HOPOPTS) || 
-		(nextheader == IPPROTO_ROUTING) ||
-		(nextheader == IPPROTO_DSTOPTS))
+	    else if ((nextheader == IPPROTO_HOPOPTS) || 
+		     (nextheader == IPPROTO_ROUTING) ||
+		     (nextheader == IPPROTO_DSTOPTS))
 	    {
 	      // Thanks to patch sent by Thomas Bohnert
 	      // Header length field in these IPv6 extension headers
 	      // stores the length of the header in units of 8 bytes, 
 	      // *without* counting the mandatory 8 bytes
-	      
+	      int extlen;
+	      if ((char *)pheader + 2 > (char *)plast + 1)
+		  return -1;
+	      extlen = ((int)(*(pheader+1)) + 1) * 8;
+	      if ((char *)pheader + extlen > (char *)plast + 1)
+		  return -1;
 	      nextheader = *pheader;
-	      length += (*(pheader+1) + 1) * 8;
-	      pheader += (*(pheader+1) + 1) * 8;
+	      length += extlen;
+	      pheader += extlen;
 	    }
 	    // IPv6 encapsulated in IPv6
-	    if (nextheader == IPPROTO_IPV6)
+	    else if (nextheader == IPPROTO_IPV6)
 	    {
+	      if ((char *)pheader + 40 > (char *)plast + 1)
+		  return -1;
+	      nextheader = *(pheader+6);
 	      pheader += 40;
-	      nextheader=*(pheader+6);
 	      length += 40;
 	    }
+	    else
+	    {
+		/* Unknown or terminal protocol reached */
+		return length;
+	    }
 
-	  if (pheader > (char *)plast)
+	    if ((char *)pheader > (char *)plast)
 		return -1;
 	}
     }
@@ -678,7 +713,7 @@ int IPcmp(
 int total_length_ext_headers(
 	struct ipv6 *pip6)
 {  
-    char nextheader;
+    u_char nextheader;
     struct ipv6_ext *pheader;
     u_int total_length = 0;
     
