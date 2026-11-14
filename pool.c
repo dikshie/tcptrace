@@ -220,9 +220,10 @@ PoolMalloc(
      *contigious blocks */
     while ((block != NULL) && (counter != bnumber)) {
       next = block->next;
+      tmp_prev = block;
       /* count number of contigious blocks */
       for (counter = 1; counter < bnumber; counter++) {
-	if ((block + pools[poolid].block_size*counter) == next) {
+	if (((char *)block + pools[poolid].block_size * counter) == (char *)next) {
 	  tmp_prev = next;
 	  next = next->next;
 	}

@@ -459,13 +459,12 @@ rtt_ackin (tcb * ptcb,
 	/* Calculate the current_size of the segment,
 	   taking care of possible sequence space wrap around */
 
-	if (pseg->seq_lastbyte > pseg->seq_firstbyte)
+	if (pseg->seq_lastbyte >= pseg->seq_firstbyte)
 	    current_size = pseg->seq_lastbyte - pseg->seq_firstbyte + 1;
 	else
-	    /* MAX_32 is 0x1,0000,0000
-	       So we don't need the "+ 1" while calculating the size here */
+	    /* Wrap-around: [seq_firstbyte .. 2^32-1] + [0 .. seq_lastbyte] */
 	    current_size =
-		(MAX_32 - pseg->seq_firstbyte) + pseg->seq_lastbyte;
+		(MAX_32 - pseg->seq_firstbyte) + pseg->seq_lastbyte + 1;
 
 	if (!ptcb->rtt_full_size || (ptcb->rtt_full_size < current_size)) {
 	    /* Found a bigger segment.. Reset all stats. */

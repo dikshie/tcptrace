@@ -53,6 +53,7 @@
  *		http://www.tcptrace.org/
  */
 #include "tcptrace.h"
+#include <limits.h>
 static char const GCC_UNUSED copyright[] =
     "@(#)Copyright (c) 2004 -- Ohio University.\n";
 static char const GCC_UNUSED rcsid[] =
@@ -846,7 +847,7 @@ LookupVar(
 		pf->vartype = V_STRING;
 		break;
 	      default:
-		pf->vartype = pf->vartype; 
+		pf->vartype = pfl->vartype; 
 	    }
 	    pf->un.variable.realtype = pfl->vartype;
 	    pf->un.variable.name = strdup(varname);
@@ -1105,8 +1106,20 @@ EvalMathopUnsigned(
       case OP_PLUS:	  ret = (varl + varr); break;
       case OP_MINUS:	  ret = (varl - varr); break;
       case OP_TIMES:	  ret = (varl * varr); break;
-      case OP_DIVIDE:	  ret = (varl / varr); break;
-      case OP_MOD:	  ret = (varl % varr); break;
+      case OP_DIVIDE:
+	  if (varr == 0) {
+	      fprintf(stderr, "Error: Division by zero in filter expression\n");
+	      exit(-1);
+	  }
+	  ret = (varl / varr);
+	  break;
+      case OP_MOD:
+	  if (varr == 0) {
+	      fprintf(stderr, "Error: Division by zero in filter expression\n");
+	      exit(-1);
+	  }
+	  ret = (varl % varr);
+	  break;
       case OP_BAND:	  ret = (varl & varr); break;
       case OP_BOR:	  ret = (varl | varr); break;
       default: {
@@ -1156,8 +1169,28 @@ EvalMathopSigned(
       case OP_PLUS:	  ret = (varl + varr); break;
       case OP_MINUS:	  ret = (varl - varr); break;
       case OP_TIMES:	  ret = (varl * varr); break;
-      case OP_DIVIDE:	  ret = (varl / varr); break;
-      case OP_MOD:	  ret = (varl % varr); break;
+      case OP_DIVIDE:
+	  if (varr == 0) {
+	      fprintf(stderr, "Error: Division by zero in filter expression\n");
+	      exit(-1);
+	  }
+	  if (varl == LLONG_MIN && varr == -1) {
+	      fprintf(stderr, "Error: Signed overflow in filter expression\n");
+	      exit(-1);
+	  }
+	  ret = (varl / varr);
+	  break;
+      case OP_MOD:
+	  if (varr == 0) {
+	      fprintf(stderr, "Error: Division by zero in filter expression\n");
+	      exit(-1);
+	  }
+	  if (varl == LLONG_MIN && varr == -1) {
+	      fprintf(stderr, "Error: Signed overflow in filter expression\n");
+	      exit(-1);
+	  }
+	  ret = (varl % varr);
+	  break;
       case OP_BAND:	  ret = (varl & varr); break;
       case OP_BOR:	  ret = (varl | varr); break;
       default: {
