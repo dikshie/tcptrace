@@ -711,7 +711,8 @@ FindContent(
 
 	    /* Start state: Find "HTTP/" that begins a response */
 	    case (ContentStateStartHttp): {
-	       if (strncasecmp(pch, "HTTP/", 5) == 0) {
+	       long rem = (char *)plast - pch + 1;
+	       if (rem >= 5 && strncasecmp(pch, "HTTP/", 5) == 0) {
 
 		  /* Found start of a response */
 		  state = ContentStateFinishHttp;
@@ -739,7 +740,15 @@ FindContent(
 	    /* Look for response code by finding non-whitespace. */
 	    case (ContentStateFindResponse): {
 	       if (*(pch) != ' ') {
-		  pget->response_code = atoi(pch);
+		  char *pval = pch;
+		  char rcode[8];
+		  int k = 0;
+		  while (pval <= (char *)plast && *pval >= '0' && *pval <= '9' &&
+			 k < (int)sizeof(rcode)-1) {
+		     rcode[k++] = *pval++;
+		  }
+		  rcode[k] = '\00';
+		  pget->response_code = (unsigned)atoi(rcode);
 		  pch += 3;
 		  state = ContentStateFindContentLength;
 	       }
@@ -752,25 +761,44 @@ FindContent(
 	    /* this state is now misnamed since we pull out other */
 	    /* headers than just content-length now. */
 	    case (ContentStateFindContentLength): {
-	       if (strncasecmp(pch, "\r\nContent-Length:", 17) == 0) {
+	       long rem = (char *)plast - pch + 1;
+	       if (rem >= 18 && strncasecmp(pch, "\r\nContent-Length:", 17) == 0) {
 		  /* Got content-length field, ignore rest of header */
-		  pget->content_length = atoi(&(pch[17]));
+		  char *pval = &(pch[17]);
+		  char clbuf[32];
+		  int k = 0;
+		  while (pval <= (char *)plast && (*pval == ' ' || *pval == '\t')) {
+		     pval++;
+		  }
+		  while (pval <= (char *)plast && *pval >= '0' && *pval <= '9' &&
+			 k < (int)sizeof(clbuf)-1) {
+		     clbuf[k++] = *pval++;
+		  }
+		  clbuf[k] = '\00';
+		  pget->content_length = (unsigned)atoi(clbuf);
 		  pch += 18;
 	       }
-	       else if (strncasecmp(pch, "\r\nContent-Type:", 15) == 0) {
+	       else if (rem >= 15 && strncasecmp(pch, "\r\nContent-Type:", 15) == 0) {
+		  int found = 0;
 		  /* Get content-type field, skipping leading spaces */
 		  pch += 15;
-		  while (*pch == ' ') {
+		  while (pch <= (char *)plast && *pch == ' ') {
 		     pch++;
 		  }
-		  for (i=0,pch2 = pch; ; ++i, ++pch2) {
+		  for (i=0,pch2 = pch; pch2 <= (char *)plast; ++i, ++pch2) {
 		     if ((*pch2 == '\n') || (*pch2 == '\r') ||
 			 (i >= sizeof(getbuf)-1)) {
 			getbuf[i] = '\00';
 			pch = pch2;  /* skip forward */
+			found = 1;
 			break;
 		     }
 		     getbuf[i] = *pch2;
+		  }
+		  if (!found) {
+		     if (i > (int) sizeof(getbuf)-1) i = (int) sizeof(getbuf)-1;
+		     getbuf[i] = '\00';
+		     pch = (char *)plast + 1;
 		  }
 		  
 		  /* If there are any spaces in the Content-Type */
@@ -785,7 +813,7 @@ FindContent(
 		  pget->content_type = strdup(getbuf);
 		  
 	       }
-	       else if (strncmp(pch, "\r\n\r\n", 4) == 0) {
+	       else if (rem >= 4 && strncmp(pch, "\r\n\r\n", 4) == 0) {
 		  /* No content-length header detected */
 		  /* No increment for pch here, effectively fall through */
 		  /* pget->content_length = 0; */
@@ -799,7 +827,7 @@ FindContent(
 	      
 	    /* Skip over the rest of the header */
 	    case (ContentStateFinishHeader): {
-	       if (strncmp(pch, "\r\n\r\n", 4) == 0) {
+	       if (((char *)plast - pch + 1) >= 4 && strncmp(pch, "\r\n\r\n", 4) == 0) {
 		  
 		  /* Found end of header */
 		  pch += 4;
@@ -842,7 +870,7 @@ FindContent(
 		  else {
 		   char *start = pch;
 		   while (pch <= (char *)plast) {
-		     if (strncmp(pch, "\r\n\r\n", 4) == 0) {
+		     if (((char *)plast - pch + 1) >= 4 && strncmp(pch, "\r\n\r\n", 4) == 0) {
 		       pch += 4;
 		       state = ContentStateStartHttp;
 		       break;
