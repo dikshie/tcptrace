@@ -62,11 +62,11 @@ TCP connection 1:
 
      RTT from 3WHS:           0.0 ms        RTT from 3WHS:           0.0 ms   
 
-     RTT full_sz smpls:         1           RTT full_sz smpls:         3      
+     RTT full_sz smpls:        18           RTT full_sz smpls:         3      
      RTT full_sz min:         0.5 ms        RTT full_sz min:         0.1 ms   
-     RTT full_sz max:         0.5 ms        RTT full_sz max:         0.3 ms   
-     RTT full_sz avg:         0.5 ms        RTT full_sz avg:         0.2 ms   
-     RTT full_sz stdev:       0.0 ms        RTT full_sz stdev:       0.1 ms   
+     RTT full_sz max:        77.8 ms        RTT full_sz max:         0.3 ms   
+     RTT full_sz avg:        11.3 ms        RTT full_sz avg:         0.2 ms   
+     RTT full_sz stdev:      24.1 ms        RTT full_sz stdev:       0.1 ms   
 
      post-loss acks:            0           post-loss acks:            1      
 	  For the following 5 RTT statistics, only ACKs for

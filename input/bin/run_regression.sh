@@ -69,10 +69,25 @@ rm -rf "${OUTDIR}" *.xpl DIFFS
 mkdir -p "${OUTDIR}"
 
 # Detect supported file formats
-"${TCPTRACE}" -hconfig 2>&1 | awk '/^\t[a-zA-Z]+/ { gsub(/^\t([a-zA-Z]+).*/,$1); print }' | grep -v Suffix > file_formats.tmp
+HCONFIG_OUTPUT=$("${TCPTRACE}" -hconfig 2>&1)
+HCONFIG_STATUS=$?
+if [ $HCONFIG_STATUS -ne 0 ]; then
+    echo "Error: Format detection failed: '${TCPTRACE} -hconfig' exited with code $HCONFIG_STATUS" >&2
+    echo "$HCONFIG_OUTPUT" >&2
+    exit 1
+fi
+
+echo "$HCONFIG_OUTPUT" | awk '/^\t[a-zA-Z]+/ { gsub(/^\t([a-zA-Z]+).*/,$1); print }' | grep -v Suffix > file_formats.tmp
+
+if [ ! -s file_formats.tmp ]; then
+    echo "Error: Format detection failed: no supported formats found in '${TCPTRACE} -hconfig' output" >&2
+    rm -f file_formats.tmp
+    exit 1
+fi
 
 SUPPORTED_FILES=""
 while read -r TYPE; do
+    [ -z "$TYPE" ] && continue
     if [ -f "${TYPE}_files" ]; then
         for f in $(cat "${TYPE}_files"); do
             SUPPORTED_FILES="$SUPPORTED_FILES $f"
@@ -80,6 +95,11 @@ while read -r TYPE; do
     fi
 done < file_formats.tmp
 rm -f file_formats.tmp
+
+if [ -z "$SUPPORTED_FILES" ]; then
+    echo "Error: Format detection failed: no test files found for detected formats" >&2
+    exit 1
+fi
 
 FAILED=0
 TOTAL=0
@@ -162,6 +182,11 @@ done
 
 echo "========================================="
 echo "Results: $PASSED / $TOTAL passed"
+
+if [ "$TOTAL" -eq 0 ]; then
+    echo "Error: No regression tests were run (TOTAL == 0)" >&2
+    exit 1
+fi
 
 if [ "$FAILED" -ne 0 ]; then
     echo "Failures occurred. Diffs stored in ${INPUT_DIR}/${OUTDIR}/"

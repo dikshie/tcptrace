@@ -143,10 +143,10 @@ TCP connection 2:
 
      RTT from 3WHS:         359.4 ms        RTT from 3WHS:           0.1 ms   
 
-     RTT full_sz smpls:         1           RTT full_sz smpls:         1      
+     RTT full_sz smpls:         2           RTT full_sz smpls:         1      
      RTT full_sz min:       319.6 ms        RTT full_sz min:         0.3 ms   
-     RTT full_sz max:       319.6 ms        RTT full_sz max:         0.3 ms   
-     RTT full_sz avg:       319.6 ms        RTT full_sz avg:         0.3 ms   
+     RTT full_sz max:       359.4 ms        RTT full_sz max:         0.3 ms   
+     RTT full_sz avg:       339.5 ms        RTT full_sz avg:         0.3 ms   
      RTT full_sz stdev:       0.0 ms        RTT full_sz stdev:       0.0 ms   
 
      post-loss acks:            0           post-loss acks:            0      

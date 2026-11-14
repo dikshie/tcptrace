@@ -143,7 +143,7 @@ TCP connection 2:
 
      RTT from 3WHS:         577.8 ms        RTT from 3WHS:           0.2 ms   
 
-     RTT full_sz smpls:         7           RTT full_sz smpls:         1      
+     RTT full_sz smpls:         7           RTT full_sz smpls:         2      
      RTT full_sz min:       605.7 ms        RTT full_sz min:         0.2 ms   
      RTT full_sz max:       757.9 ms        RTT full_sz max:         0.2 ms   
      RTT full_sz avg:       658.9 ms        RTT full_sz avg:         0.2 ms   
@@ -221,7 +221,7 @@ TCP connection 3:
 
      RTT from 3WHS:         635.8 ms        RTT from 3WHS:           0.2 ms   
 
-     RTT full_sz smpls:         7           RTT full_sz smpls:         1      
+     RTT full_sz smpls:         7           RTT full_sz smpls:         2      
      RTT full_sz min:       601.6 ms        RTT full_sz min:         0.2 ms   
      RTT full_sz max:       783.2 ms        RTT full_sz max:         0.2 ms   
      RTT full_sz avg:       680.4 ms        RTT full_sz avg:         0.2 ms   
@@ -299,7 +299,7 @@ TCP connection 4:
 
      RTT from 3WHS:         615.4 ms        RTT from 3WHS:           0.1 ms   
 
-     RTT full_sz smpls:         7           RTT full_sz smpls:         1      
+     RTT full_sz smpls:         7           RTT full_sz smpls:         2      
      RTT full_sz min:       583.3 ms        RTT full_sz min:         0.1 ms   
      RTT full_sz max:       758.5 ms        RTT full_sz max:         0.1 ms   
      RTT full_sz avg:       650.1 ms        RTT full_sz avg:         0.1 ms   
@@ -377,7 +377,7 @@ TCP connection 5:
 
      RTT from 3WHS:         638.4 ms        RTT from 3WHS:           0.2 ms   
 
-     RTT full_sz smpls:         1           RTT full_sz smpls:         1      
+     RTT full_sz smpls:         1           RTT full_sz smpls:         2      
      RTT full_sz min:       648.1 ms        RTT full_sz min:         0.2 ms   
      RTT full_sz max:       648.1 ms        RTT full_sz max:         0.2 ms   
      RTT full_sz avg:       648.1 ms        RTT full_sz avg:         0.2 ms   
@@ -455,7 +455,7 @@ TCP connection 6:
 
      RTT from 3WHS:         671.9 ms        RTT from 3WHS:           0.2 ms   
 
-     RTT full_sz smpls:         4           RTT full_sz smpls:         1      
+     RTT full_sz smpls:         4           RTT full_sz smpls:         2      
      RTT full_sz min:       645.3 ms        RTT full_sz min:         0.2 ms   
      RTT full_sz max:       780.4 ms        RTT full_sz max:         0.2 ms   
      RTT full_sz avg:       703.6 ms        RTT full_sz avg:         0.2 ms   
@@ -533,7 +533,7 @@ TCP connection 7:
 
      RTT from 3WHS:         705.2 ms        RTT from 3WHS:           0.2 ms   
 
-     RTT full_sz smpls:         1           RTT full_sz smpls:         1      
+     RTT full_sz smpls:         1           RTT full_sz smpls:         2      
      RTT full_sz min:       606.1 ms        RTT full_sz min:         0.2 ms   
      RTT full_sz max:       606.1 ms        RTT full_sz max:         0.2 ms   
      RTT full_sz avg:       606.1 ms        RTT full_sz avg:         0.2 ms   
@@ -611,7 +611,7 @@ TCP connection 8:
 
      RTT from 3WHS:         630.0 ms        RTT from 3WHS:           0.2 ms   
 
-     RTT full_sz smpls:         1           RTT full_sz smpls:         1      
+     RTT full_sz smpls:         1           RTT full_sz smpls:         2      
      RTT full_sz min:       772.2 ms        RTT full_sz min:         0.2 ms   
      RTT full_sz max:       772.2 ms        RTT full_sz max:         0.2 ms   
      RTT full_sz avg:       772.2 ms        RTT full_sz avg:         0.2 ms   
@@ -689,7 +689,7 @@ TCP connection 9:
 
      RTT from 3WHS:         630.7 ms        RTT from 3WHS:           0.2 ms   
 
-     RTT full_sz smpls:         1           RTT full_sz smpls:         1      
+     RTT full_sz smpls:         1           RTT full_sz smpls:         2      
      RTT full_sz min:       810.4 ms        RTT full_sz min:         0.2 ms   
      RTT full_sz max:       810.4 ms        RTT full_sz max:         0.2 ms   
      RTT full_sz avg:       810.3 ms        RTT full_sz avg:         0.2 ms   
@@ -767,7 +767,7 @@ TCP connection 10:
 
      RTT from 3WHS:         649.3 ms        RTT from 3WHS:           0.2 ms   
 
-     RTT full_sz smpls:         1           RTT full_sz smpls:         1      
+     RTT full_sz smpls:         1           RTT full_sz smpls:         2      
      RTT full_sz min:       648.4 ms        RTT full_sz min:         0.2 ms   
      RTT full_sz max:       648.4 ms        RTT full_sz max:         0.2 ms   
      RTT full_sz avg:       648.3 ms        RTT full_sz avg:         0.2 ms   
@@ -845,7 +845,7 @@ TCP connection 11:
 
      RTT from 3WHS:         686.7 ms        RTT from 3WHS:           0.2 ms   
 
-     RTT full_sz smpls:         1           RTT full_sz smpls:         1      
+     RTT full_sz smpls:         1           RTT full_sz smpls:         2      
      RTT full_sz min:       697.8 ms        RTT full_sz min:         0.2 ms   
      RTT full_sz max:       697.8 ms        RTT full_sz max:         0.2 ms   
      RTT full_sz avg:       697.7 ms        RTT full_sz avg:         0.2 ms   
@@ -923,10 +923,10 @@ TCP connection 12:
 
      RTT from 3WHS:         682.7 ms        RTT from 3WHS:           0.1 ms   
 
-     RTT full_sz smpls:         1           RTT full_sz smpls:         1      
-     RTT full_sz min:       728.3 ms        RTT full_sz min:         0.2 ms   
+     RTT full_sz smpls:         1           RTT full_sz smpls:         2      
+     RTT full_sz min:       728.3 ms        RTT full_sz min:         0.1 ms   
      RTT full_sz max:       728.3 ms        RTT full_sz max:         0.2 ms   
-     RTT full_sz avg:       728.2 ms        RTT full_sz avg:         0.2 ms   
+     RTT full_sz avg:       728.2 ms        RTT full_sz avg:         0.1 ms   
      RTT full_sz stdev:       0.0 ms        RTT full_sz stdev:       0.0 ms   
 
      post-loss acks:            0           post-loss acks:            0      
@@ -1001,7 +1001,7 @@ TCP connection 13:
 
      RTT from 3WHS:         633.5 ms        RTT from 3WHS:           0.2 ms   
 
-     RTT full_sz smpls:         1           RTT full_sz smpls:         1      
+     RTT full_sz smpls:         1           RTT full_sz smpls:         2      
      RTT full_sz min:       673.7 ms        RTT full_sz min:         0.2 ms   
      RTT full_sz max:       673.7 ms        RTT full_sz max:         0.2 ms   
      RTT full_sz avg:       673.7 ms        RTT full_sz avg:         0.2 ms   
@@ -1079,10 +1079,10 @@ TCP connection 14:
 
      RTT from 3WHS:         596.9 ms        RTT from 3WHS:           0.2 ms   
 
-     RTT full_sz smpls:         1           RTT full_sz smpls:         1      
-     RTT full_sz min:       624.3 ms        RTT full_sz min:         0.3 ms   
+     RTT full_sz smpls:         1           RTT full_sz smpls:         2      
+     RTT full_sz min:       624.3 ms        RTT full_sz min:         0.2 ms   
      RTT full_sz max:       624.3 ms        RTT full_sz max:         0.3 ms   
-     RTT full_sz avg:       624.2 ms        RTT full_sz avg:         0.3 ms   
+     RTT full_sz avg:       624.2 ms        RTT full_sz avg:         0.2 ms   
      RTT full_sz stdev:       0.0 ms        RTT full_sz stdev:       0.0 ms   
 
      post-loss acks:            0           post-loss acks:            0      
@@ -1157,7 +1157,7 @@ TCP connection 15:
 
      RTT from 3WHS:         727.1 ms        RTT from 3WHS:           0.2 ms   
 
-     RTT full_sz smpls:         1           RTT full_sz smpls:         1      
+     RTT full_sz smpls:         1           RTT full_sz smpls:         2      
      RTT full_sz min:       773.8 ms        RTT full_sz min:         0.2 ms   
      RTT full_sz max:       773.8 ms        RTT full_sz max:         0.2 ms   
      RTT full_sz avg:       773.7 ms        RTT full_sz avg:         0.2 ms   
@@ -1235,7 +1235,7 @@ TCP connection 16:
 
      RTT from 3WHS:         698.5 ms        RTT from 3WHS:           0.2 ms   
 
-     RTT full_sz smpls:         1           RTT full_sz smpls:         1      
+     RTT full_sz smpls:         1           RTT full_sz smpls:         2      
      RTT full_sz min:       712.8 ms        RTT full_sz min:         0.2 ms   
      RTT full_sz max:       712.8 ms        RTT full_sz max:         0.2 ms   
      RTT full_sz avg:       712.8 ms        RTT full_sz avg:         0.2 ms   
@@ -1313,10 +1313,10 @@ TCP connection 17:
 
      RTT from 3WHS:         671.1 ms        RTT from 3WHS:           0.2 ms   
 
-     RTT full_sz smpls:         7           RTT full_sz smpls:         1      
-     RTT full_sz min:       592.1 ms        RTT full_sz min:         0.3 ms   
+     RTT full_sz smpls:         7           RTT full_sz smpls:         2      
+     RTT full_sz min:       592.1 ms        RTT full_sz min:         0.2 ms   
      RTT full_sz max:       771.0 ms        RTT full_sz max:         0.3 ms   
-     RTT full_sz avg:       680.2 ms        RTT full_sz avg:         0.3 ms   
+     RTT full_sz avg:       680.2 ms        RTT full_sz avg:         0.2 ms   
      RTT full_sz stdev:      84.5 ms        RTT full_sz stdev:       0.0 ms   
 
      post-loss acks:            0           post-loss acks:            0      
@@ -1391,10 +1391,10 @@ TCP connection 18:
 
      RTT from 3WHS:         631.8 ms        RTT from 3WHS:           0.1 ms   
 
-     RTT full_sz smpls:         1           RTT full_sz smpls:         1      
-     RTT full_sz min:       595.2 ms        RTT full_sz min:         0.2 ms   
+     RTT full_sz smpls:         1           RTT full_sz smpls:         2      
+     RTT full_sz min:       595.2 ms        RTT full_sz min:         0.1 ms   
      RTT full_sz max:       595.2 ms        RTT full_sz max:         0.2 ms   
-     RTT full_sz avg:       595.1 ms        RTT full_sz avg:         0.2 ms   
+     RTT full_sz avg:       595.1 ms        RTT full_sz avg:         0.1 ms   
      RTT full_sz stdev:       0.0 ms        RTT full_sz stdev:       0.0 ms   
 
      post-loss acks:            0           post-loss acks:            0      

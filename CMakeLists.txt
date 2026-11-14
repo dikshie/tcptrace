@@ -185,7 +185,7 @@ endif()
 # Testing with CTest
 enable_testing()
 add_test(NAME regression_test
-    COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/input/bin/run_regression.sh" "$<TARGET_FILE:tcptrace>"
+    COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/input/bin/run_regression.sh" --full "$<TARGET_FILE:tcptrace>"
     WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
 )
 
